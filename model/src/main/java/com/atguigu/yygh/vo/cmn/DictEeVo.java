@@ -1,8 +1,9 @@
 package com.atguigu.yygh.vo.cmn;
 
 import com.alibaba.excel.annotation.ExcelProperty;
-import com.alibaba.excel.metadata.BaseRowModel;
 import lombok.Data;
+
+import java.io.Serializable;
 
 /**
  * <p>
@@ -12,7 +13,7 @@ import lombok.Data;
  * @author qy
  */
 @Data
-public class DictEeVo {
+public class DictEeVo implements Serializable {
 
 	@ExcelProperty(value = "id" ,index = 0)
 	private Long id;

@@ -28,6 +28,7 @@ import java.util.Random;
 @Api(tags = "医院设置管理")
 @RestController
 @RequestMapping("/admin/hosp/hospitalSet")
+@CrossOrigin
 public class HospitalSetController {
 
     @Autowired
@@ -119,5 +120,40 @@ public class HospitalSetController {
 
     }
 
+    @ApiOperation("医院设置锁定与解锁")
+    @PutMapping("/{id}/{status}")
+    public Result lockOrUnlockHospital(@PathVariable Long id, @PathVariable Integer status) {
+        //根据id获取医院设置信息
+        HospitalSet hospitalSet = hospitalSetService.getById(id);
+        //修改状态
+        hospitalSet.setStatus(status);
+        //修改
+        hospitalSetService.updateById(hospitalSet);
+        return Result.ok();
+    }
+
+    /**
+     * @Description: 医院信息配置后，可以通过短信的形式发送医院编号与签名key给联系人，
+     * 联系人拿到该信息就可以参考《尚医通API接口文档.docx》对接接口了。
+     * @Param: id
+     * @return: Result
+     */
+    @ApiOperation("发送签名")
+    @PutMapping("/sendKey/{id}")
+    public Result sendKey(@PathVariable Long id) {
+        HospitalSet hospitalSet = hospitalSetService.getById(id);
+        String signKey = hospitalSet.getSignKey();
+        String hoscode = hospitalSet.getHoscode();
+        //Todo 发送短信
+
+        return Result.ok();
+    }
+
+    @ApiOperation("修改医院设置信息")
+    @PutMapping
+    public Result updateHospSet(@RequestBody HospitalSet hospitalSet){
+        hospitalSetService.updateById(hospitalSet);
+        return Result.ok();
+    }
 
 }
