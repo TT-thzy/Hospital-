@@ -1,4 +1,4 @@
-package com.atguigu.yygh.hosp.controller;
+package com.atguigu.yygh.hosp.controller.Api;
 
 import com.atguigu.yygh.common.exception.YyghException;
 import com.atguigu.yygh.common.helper.HttpRequestHelper;
@@ -28,10 +28,10 @@ import java.util.Map;
  * @author: Mr.Wang
  * @create: 2022-02-08 00:03
  **/
-@Api(tags = "医院排班接口")
+@Api(tags = "医院排班API接口")
 @RestController
 @RequestMapping("/api/hosp")
-public class ScheduleController {
+public class ScheduleApiController {
 
     @Autowired
     private ScheduleService scheduleService;

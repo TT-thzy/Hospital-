@@ -14,6 +14,8 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
@@ -37,8 +39,8 @@ public class DictServiceImpl extends ServiceImpl<DictMapper, Dict> implements Di
      * @Param: [id]
      * @return: java.util.List<com.atguigu.yygh.model.cmn.Dict>
      */
-    @Transactional(propagation = Propagation.REQUIRED,readOnly = true)
-    @Cacheable(value = "dict",keyGenerator = "keyGenerator")
+    @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+    @Cacheable(value = "dict", keyGenerator = "keyGenerator")
     @Override
     public List<Dict> getChildData(Long id) {
 
@@ -53,9 +55,9 @@ public class DictServiceImpl extends ServiceImpl<DictMapper, Dict> implements Di
     }
 
     /**
-     *@Description:判断id下面是否有子节点
-     *@Param: [id]
-     *@return: boolean
+     * @Description:判断id下面是否有子节点
+     * @Param: [id]
+     * @return: boolean
      */
     private boolean hasChild(Long id) {
         QueryWrapper<Dict> dictQueryWrapper = new QueryWrapper<>();
@@ -65,25 +67,25 @@ public class DictServiceImpl extends ServiceImpl<DictMapper, Dict> implements Di
     }
 
     /**
-     *@Description:导入
-     *@Param: [file]
-     *@return: void
+     * @Description:导入
+     * @Param: [file]
+     * @return: void
      */
     @Transactional
-    @CacheEvict(value = "dict", allEntries=true)
+    @CacheEvict(value = "dict", allEntries = true)
     @Override
     public void importData(MultipartFile file) {
         try {
-            EasyExcel.read(file.getInputStream(),DictEeVo.class,new DictListener(baseMapper)).sheet().doRead();
+            EasyExcel.read(file.getInputStream(), DictEeVo.class, new DictListener(baseMapper)).sheet().doRead();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
     /**
-     *@Description:导出
-     *@Param: [response]
-     *@return: void
+     * @Description:导出
+     * @Param: [response]
+     * @return: void
      */
     @Override
     public void exportData(HttpServletResponse response) {
@@ -104,12 +106,42 @@ public class DictServiceImpl extends ServiceImpl<DictMapper, Dict> implements Di
                 dictEeVos.add(dictEeVo);
             }
             //导出（下载）
-            EasyExcel.write(response.getOutputStream(),DictEeVo.class).sheet("数据字典").doWrite(dictEeVos);
+            EasyExcel.write(response.getOutputStream(), DictEeVo.class).sheet("数据字典").doWrite(dictEeVos);
 
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
 
+    @Override
+    public String getNameByParentDictCodeAndValue(String parentDictCode, String value) {
+        //如果value能唯一定位数据字典，parentDictCode可以传空，例如：省市区的value值能够唯一确定
+        if (StringUtils.isEmpty(parentDictCode)) {
+            Dict dict = baseMapper.selectOne(new QueryWrapper<Dict>().eq("value", value));
+            if (!ObjectUtils.isEmpty(dict)) {
+                return dict.getName();
+            }
+        } else {
+            Dict dictParent = baseMapper.selectOne(new QueryWrapper<Dict>().eq("dict_code", parentDictCode));
+            if (ObjectUtils.isEmpty(dictParent)) {
+                return null;
+            }
+            Long id = dictParent.getId();
+            Dict dict = baseMapper.selectOne(new QueryWrapper<Dict>().eq("parent_id", id).eq("value", value));
+            if (!ObjectUtils.isEmpty(dict)) {
+                return dict.getName();
+            }
+        }
 
+        return null;
+    }
+
+    @Override
+    public List<Dict> findByDictCode(String dictCode) {
+        Dict dict = baseMapper.selectOne(new QueryWrapper<Dict>().eq("dict_code", dictCode));
+        if (ObjectUtils.isEmpty(dict)) {
+            return null;
+        }
+        return this.getChildData(dict.getId());
     }
 }

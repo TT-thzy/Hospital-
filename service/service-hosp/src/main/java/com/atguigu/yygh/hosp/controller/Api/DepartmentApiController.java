@@ -1,4 +1,4 @@
-package com.atguigu.yygh.hosp.controller;
+package com.atguigu.yygh.hosp.controller.Api;
 
 import com.atguigu.yygh.common.exception.YyghException;
 import com.atguigu.yygh.common.helper.HttpRequestHelper;
@@ -27,10 +27,10 @@ import java.util.Map;
  * @author: Mr.Wang
  * @create: 2022-02-07 23:20
  **/
-@Api(tags = "医院科室接口")
+@Api(tags = "医院科室API接口")
 @RestController
 @RequestMapping("/api/hosp")
-public class DepartmentController {
+public class DepartmentApiController {
 
     @Autowired
     private DepartmentService departmentService;

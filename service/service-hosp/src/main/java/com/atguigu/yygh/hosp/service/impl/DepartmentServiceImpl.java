@@ -48,7 +48,7 @@ public class DepartmentServiceImpl implements DepartmentService {
     public Page<Department> selectPage(int page, int limit, DepartmentQueryVo departmentQueryVo) {
         //分页对象
         Sort sort = Sort.by(Sort.Direction.DESC, "createTime");
-        Pageable pageable = PageRequest.of(page - 1, limit);
+        Pageable pageable = PageRequest.of(page - 1, limit, sort);
         //查询条件
         Department department = new Department();
         BeanExchangeUtils.copyProperties(departmentQueryVo, department);

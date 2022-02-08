@@ -47,4 +47,25 @@ public class DictController {
         dictService.importData(file);
         return Result.ok();
     }
+
+    //提供两个api接口，如省市区不需要上级编码，医院等级需要上级编码
+    @ApiOperation(value = "获取数据字典名称")
+    @GetMapping(value = "/getName/{parentDictCode}/{value}")
+    public String getDictName(@PathVariable String parentDictCode, @PathVariable String value) {
+        return dictService.getNameByParentDictCodeAndValue(parentDictCode, value);
+    }
+
+    @ApiOperation(value = "获取数据字典名称")
+    @GetMapping(value = "/getName/{value}")
+    public String getDictName(@PathVariable String value) {
+        return dictService.getNameByParentDictCodeAndValue("", value);
+    }
+
+    @ApiOperation(value = "根据dictCode获取下级节点")
+    @GetMapping(value = "/findByDictCode/{dictCode}")
+    public Result<List<Dict>> findByDictCode(@PathVariable String dictCode) {
+        List<Dict> list = dictService.findByDictCode(dictCode);
+        return Result.ok(list);
+    }
+
 }

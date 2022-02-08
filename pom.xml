@@ -9,6 +9,7 @@
         <module>common</module>
         <module>model</module>
         <module>service</module>
+        <module>service-client</module>
     </modules>
     <name>yygh_parent</name>
     <description>Demo project for Spring Boot</description>

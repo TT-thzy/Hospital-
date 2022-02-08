@@ -48,7 +48,7 @@ public class ScheduleServiceImpl implements ScheduleService {
     @Override
     public Page<Schedule> selectPage(int page, int limit, ScheduleQueryVo scheduleQueryVo) {
         Sort sort = Sort.by(Sort.Direction.DESC, "createTime");
-        Pageable pageable = PageRequest.of(page - 1, limit);
+        Pageable pageable = PageRequest.of(page - 1, limit, sort);
         //查询条件
         Schedule schedule = new Schedule();
         BeanExchangeUtils.copyProperties(scheduleQueryVo, schedule);
