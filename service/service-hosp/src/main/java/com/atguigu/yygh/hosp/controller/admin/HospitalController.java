@@ -1,4 +1,4 @@
-package com.atguigu.yygh.hosp.controller;
+package com.atguigu.yygh.hosp.controller.admin;
 
 import com.atguigu.yygh.common.result.Result;
 import com.atguigu.yygh.hosp.service.HospitalService;
@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 @Api(tags = "医院管理接口")
 @RestController
 @RequestMapping("/admin/hosp/hospital")
-@CrossOrigin
+//@CrossOrigin
 public class HospitalController {
 
     @Autowired

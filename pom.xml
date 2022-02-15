@@ -10,6 +10,7 @@
         <module>model</module>
         <module>service</module>
         <module>service-client</module>
+        <module>server-gateway</module>
     </modules>
     <name>yygh_parent</name>
     <description>Demo project for Spring Boot</description>

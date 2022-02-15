@@ -19,6 +19,7 @@ import org.springframework.util.ObjectUtils;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -69,7 +70,7 @@ public class HospitalServiceImpl implements HospitalService {
 
     @Override
     public Page<Hospital> selectPage(Integer page, Integer limit, HospitalQueryVo hospitalQueryVo) {
-        Sort sort = Sort.by(Sort.Direction.DESC, "createTime");
+        Sort sort = Sort.by(Sort.Direction.ASC, "createTime");
         Pageable pageable = PageRequest.of(page - 1, limit, sort);
         ExampleMatcher matcher = ExampleMatcher.matching().withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING).withIgnoreCase(true);
         Hospital hospital = new Hospital();
@@ -91,6 +92,7 @@ public class HospitalServiceImpl implements HospitalService {
         String provinceString = dictFeignClient.getDictName(item.getProvinceCode());
         String districtString = dictFeignClient.getDictName(item.getDistrictCode());
         item.getParam().put("fullAddress", provinceString + cityString + districtString + item.getAddress());
+//        System.out.println(dictFeignClient);
     }
 
     @Override
@@ -112,6 +114,34 @@ public class HospitalServiceImpl implements HospitalService {
         //不需要重复返回
         hospital.setBookingRule(null);
         return result;
+    }
 
+    //根据hoscode得到hospName
+    @Override
+    public String getHospName(String hoscode) {
+        Hospital hospital = hospitalRepository.getHospitalByHoscode(hoscode);
+        if (ObjectUtils.isEmpty(hospital)){
+            return null;
+        }
+        return hospital.getHosname();
+    }
+
+    @Override
+    public List<Hospital> getHospitalByHosname(String hosname) {
+        return hospitalRepository.findHospitalByHosnameLike(hosname);
+    }
+
+    @Override
+    public Map<String, Object> item(String hoscode) {
+        Map<String, Object> result = new HashMap<String, Object>();
+        //医院详情
+        Hospital hospital = this.getHospitalByHoscode(hoscode);
+        this.packHospital(hospital);
+        result.put("hospital", hospital);
+        //预约规则
+        result.put("bookingRule", hospital.getBookingRule());
+        //不需要重复返回
+        hospital.setBookingRule(null);
+        return result;
     }
 }

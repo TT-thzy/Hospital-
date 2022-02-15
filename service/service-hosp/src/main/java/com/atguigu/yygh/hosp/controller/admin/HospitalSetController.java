@@ -1,4 +1,4 @@
-package com.atguigu.yygh.hosp.controller;
+package com.atguigu.yygh.hosp.controller.admin;
 
 import com.atguigu.yygh.common.exception.YyghException;
 import com.atguigu.yygh.common.result.Result;
@@ -28,7 +28,7 @@ import java.util.Random;
 @Api(tags = "医院设置管理")
 @RestController
 @RequestMapping("/admin/hosp/hospitalSet")
-@CrossOrigin
+//@CrossOrigin
 public class HospitalSetController {
 
     @Autowired
