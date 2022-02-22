@@ -3,6 +3,7 @@ package com.atguigu.yygh.hosp.service;
 import com.atguigu.yygh.common.result.Result;
 import com.atguigu.yygh.model.hosp.Hospital;
 import com.atguigu.yygh.vo.hosp.HospitalQueryVo;
+import com.atguigu.yygh.vo.order.SignInfoVo;
 import org.springframework.data.domain.Page;
 
 import java.util.List;
@@ -34,4 +35,5 @@ public interface HospitalService {
      */
     Map<String, Object> item(String hoscode);
 
+    SignInfoVo getSignInfoVo(String hoscode);
 }

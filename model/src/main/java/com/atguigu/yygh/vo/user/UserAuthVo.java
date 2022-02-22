@@ -21,7 +21,7 @@ public class UserAuthVo {
     @TableField("certificates_no")
     private String certificatesNo;
 
-    @ApiModelProperty(value = "证件路径")
+    @ApiModelProperty(value = "证件图片路径")
     @TableField("certificates_url")
     private String certificatesUrl;
 

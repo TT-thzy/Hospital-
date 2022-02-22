@@ -17,10 +17,10 @@ public class UserInfoQueryVo {
     @ApiModelProperty(value = "认证状态")
     private Integer authStatus;
 
-    @ApiModelProperty(value = "创建时间")
+    @ApiModelProperty(value = "开始时间")
     private String createTimeBegin;
 
-    @ApiModelProperty(value = "创建时间")
+    @ApiModelProperty(value = "结束时间")
     private String createTimeEnd;
 
 }

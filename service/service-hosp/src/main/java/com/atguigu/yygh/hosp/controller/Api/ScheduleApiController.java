@@ -86,7 +86,7 @@ public class ScheduleApiController {
         return Result.ok(pageModel);
     }
 
-    @ApiOperation(value = "删除科室")
+    @ApiOperation(value = "删除排班")
     @PostMapping("schedule/remove")
     public Result deleteSchedule(HttpServletRequest request) {
         Map<String, Object> paramMap = HttpRequestHelper.switchMap(request.getParameterMap());

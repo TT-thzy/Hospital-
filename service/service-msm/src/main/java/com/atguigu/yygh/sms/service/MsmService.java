@@ -1,5 +1,7 @@
 package com.atguigu.yygh.sms.service;
 
+import com.atguigu.yygh.vo.msm.MsmVo;
+
 /**
  * @program: yygh_parent
  * @description:
@@ -8,4 +10,6 @@ package com.atguigu.yygh.sms.service;
  **/
 public interface MsmService {
     boolean sendMessage(String phone, String code);
+
+    boolean send(MsmVo msmVo);
 }

@@ -36,6 +36,14 @@
             <artifactId>service-cmn-client</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
+
+        <!--rabbitmq消息队列-->
+        <dependency>
+            <groupId>com.atguigu</groupId>
+            <artifactId>rabbit-util</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+
     </dependencies>
 
 </project>

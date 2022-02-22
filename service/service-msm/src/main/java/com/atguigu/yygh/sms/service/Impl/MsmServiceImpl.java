@@ -4,8 +4,10 @@ package com.atguigu.yygh.sms.service.Impl;
 import com.atguigu.yygh.common.utils.HttpUtils;
 import com.atguigu.yygh.sms.service.MsmService;
 import com.atguigu.yygh.sms.utils.ConstantPropertiesUtils;
+import com.atguigu.yygh.vo.msm.MsmVo;
 import org.apache.http.HttpResponse;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -28,6 +30,15 @@ public class MsmServiceImpl implements MsmService {
         }
         boolean send = this.send(code, phone);
         return send;
+    }
+
+    @Override
+    public boolean send(MsmVo msmVo) {
+        if(!StringUtils.isEmpty(msmVo.getPhone())) {
+            String code = (String)msmVo.getParam().get("code");
+            return this.send(code,msmVo.getPhone());
+        }
+        return false;
     }
 
     private boolean send(String code, String phone) {

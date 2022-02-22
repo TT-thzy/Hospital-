@@ -2,7 +2,9 @@ package com.atguigu.yygh.hosp.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
 import com.atguigu.yygh.cmn.client.DictFeignClient;
+import com.atguigu.yygh.common.exception.YyghException;
 import com.atguigu.yygh.common.result.Result;
+import com.atguigu.yygh.common.result.ResultCodeEnum;
 import com.atguigu.yygh.common.utils.BeanExchangeUtils;
 import com.atguigu.yygh.enums.DictEnum;
 import com.atguigu.yygh.hosp.repository.HospitalRepository;
@@ -10,7 +12,11 @@ import com.atguigu.yygh.hosp.service.HospitalService;
 import com.atguigu.yygh.hosp.service.HospitalSetService;
 import com.atguigu.yygh.model.cmn.Dict;
 import com.atguigu.yygh.model.hosp.Hospital;
+import com.atguigu.yygh.model.hosp.HospitalSet;
 import com.atguigu.yygh.vo.hosp.HospitalQueryVo;
+import com.atguigu.yygh.vo.order.SignInfoVo;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
@@ -35,6 +41,8 @@ public class HospitalServiceImpl implements HospitalService {
     private HospitalRepository hospitalRepository;
     @Autowired
     private DictFeignClient dictFeignClient;
+    @Autowired
+    private HospitalSetService hospitalSetService;
 
     @Override
     public void saveHospital(Map<String, Object> map) {
@@ -120,7 +128,7 @@ public class HospitalServiceImpl implements HospitalService {
     @Override
     public String getHospName(String hoscode) {
         Hospital hospital = hospitalRepository.getHospitalByHoscode(hoscode);
-        if (ObjectUtils.isEmpty(hospital)){
+        if (ObjectUtils.isEmpty(hospital)) {
             return null;
         }
         return hospital.getHosname();
@@ -143,5 +151,17 @@ public class HospitalServiceImpl implements HospitalService {
         //不需要重复返回
         hospital.setBookingRule(null);
         return result;
+    }
+
+    @Override
+    public SignInfoVo getSignInfoVo(String hoscode) {
+        SignInfoVo signInfoVo = new SignInfoVo();
+        HospitalSet hospitalSet = hospitalSetService.getOne(new QueryWrapper<HospitalSet>().eq("hoscode", hoscode));
+        if (hospitalSet == null) {
+            throw new YyghException(ResultCodeEnum.HOSPITAL_OPEN);
+        }
+        signInfoVo.setApiUrl(hospitalSet.getApiUrl());
+        signInfoVo.setSignKey(hospitalSet.getSignKey());
+        return signInfoVo;
     }
 }
