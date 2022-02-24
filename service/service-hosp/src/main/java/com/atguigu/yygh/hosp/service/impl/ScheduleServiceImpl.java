@@ -326,6 +326,13 @@ public class ScheduleServiceImpl implements ScheduleService {
         scheduleRepository.save(schedule);
     }
 
+    @Override
+    public Schedule getScheduleByHosScheduleId(String scheduleId) {
+        Schedule schedule = scheduleRepository.getScheduleByHosScheduleId(scheduleId);
+        this.packageSchedule(schedule);
+        return schedule;
+    }
+
     private IPage<Date> getListDate(Integer page, Integer limit, BookingRule bookingRule) {
         //当天放号时间
         DateTime releaseTime = this.getDateTime(new Date(), bookingRule.getReleaseTime());

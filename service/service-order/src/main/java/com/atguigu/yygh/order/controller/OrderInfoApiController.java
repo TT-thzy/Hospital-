@@ -60,5 +60,11 @@ public class OrderInfoApiController {
         return Result.ok(orderInfoService.getOrderDetail(orderId));
     }
 
+    @ApiOperation(value = "取消预约")
+    @GetMapping("/auth/cancelOrder/{orderId}")
+    public Result cancelOrder(@PathVariable("orderId") Long orderId) {
+        return Result.ok(orderInfoService.cancelOrder(orderId));
+    }
+
 }
 

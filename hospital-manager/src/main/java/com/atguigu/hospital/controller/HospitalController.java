@@ -95,5 +95,26 @@ public class HospitalController {
             return Result.fail().message(e.getMessage());
         }
     }
+
+    /**
+     * 更新取消预约状态
+     *
+     * @param request
+     * @return
+     */
+    @PostMapping("/order/updateCancelNum")
+    public Result updateCancelNum(HttpServletRequest request, HttpServletResponse response) {
+        try {
+            Map<String, Object> paramMap = HttpRequestHelper.switchMap(request.getParameterMap());
+            if (!HttpRequestHelper.isSignEquals(paramMap, apiService.getSignKey())) {
+                throw new YyghException(ResultCodeEnum.SIGN_ERROR);
+            }
+
+            hospitalService.updateCancelNum(paramMap);
+            return Result.ok();
+        } catch (YyghException e) {
+            return Result.fail().message(e.getMessage());
+        }
+    }
 }
 

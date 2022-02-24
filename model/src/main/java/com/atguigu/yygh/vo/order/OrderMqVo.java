@@ -11,7 +11,7 @@ import java.util.Date;
 @ApiModel(description = "OrderMqVo")
 public class OrderMqVo {
 
-	@ApiModelProperty(value = "可预约数")
+	@ApiModelProperty(value = "总可预约数")
 	private Integer reservedNumber;
 
 	@ApiModelProperty(value = "剩余预约数")

@@ -14,6 +14,7 @@ import com.atguigu.yygh.model.order.OrderInfo;
 import com.atguigu.yygh.model.user.Patient;
 import com.atguigu.yygh.order.mapper.OrderInfoMapper;
 import com.atguigu.yygh.order.service.OrderInfoService;
+import com.atguigu.yygh.order.service.WeixinService;
 import com.atguigu.yygh.user.client.PatientFeignClient;
 import com.atguigu.yygh.vo.hosp.ScheduleOrderVo;
 import com.atguigu.yygh.vo.msm.MsmVo;
@@ -30,6 +31,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
@@ -50,6 +52,9 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
 
     @Autowired
     private RabbitService rabbitService;
+
+    @Autowired
+    private WeixinService weixinService;
 
     @Override
     public Long saveOrder(String scheduleId, Long patientId) {
@@ -141,9 +146,9 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
             //短信提示
             MsmVo msmVo = new MsmVo();
             msmVo.setPhone(orderInfo.getPatientPhone());
-            String reserveDate =
-                    new DateTime(orderInfo.getReserveDate()).toString("yyyy-MM-dd")
-                            + (orderInfo.getReserveTime() == 0 ? "上午" : "下午");
+//            String reserveDate =
+//                    new DateTime(orderInfo.getReserveDate()).toString("yyyy-MM-dd")
+//                            + (orderInfo.getReserveTime() == 0 ? "上午" : "下午");
             Map<String, Object> param = new HashMap<String, Object>() {{
 //                put("title", orderInfo.getHosname() + "|" + orderInfo.getDepname() + "|" + orderInfo.getTitle());
 //                put("amount", orderInfo.getAmount());
@@ -216,6 +221,92 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         Patient patient = patientFeignClient.getPatient(orderInfo.getPatientId());
         resultMap.put("patient", patient);
         return resultMap;
+    }
+
+    //两种情况
+    //1、未支付取消订单，直接通知医院更新取消预约状态
+    //2、已支付取消订单，先退款给用户，然后通知医院更新取消预约状态
+    @Override
+    public Boolean cancelOrder(Long orderId) {
+        OrderInfo orderInfo = baseMapper.selectById(orderId);
+        //退号时间已过，不能取消预约
+        DateTime quitTime = new DateTime(orderInfo.getQuitTime());
+        if (quitTime.isBeforeNow()) {
+            throw new YyghException(ResultCodeEnum.CANCEL_ORDER_NO);
+        }
+        //告知医院修改支付状态
+        SignInfoVo signInfoVo = hospitalFeignClient.getSignInfoVo(orderInfo.getHoscode());
+        if (null == signInfoVo) {
+            throw new YyghException(ResultCodeEnum.PARAM_ERROR);
+        }
+        Map<String, Object> reqMap = new HashMap<>();
+        reqMap.put("hoscode", orderInfo.getHoscode());
+        reqMap.put("hosRecordId", orderInfo.getHosRecordId());
+        reqMap.put("timestamp", HttpRequestHelper.getTimestamp());
+        String sign = HttpRequestHelper.getSign(reqMap, signInfoVo.getSignKey());
+        reqMap.put("sign", sign);
+        JSONObject result = HttpRequestHelper.sendRequest(reqMap, signInfoVo.getApiUrl() + "/order/updateCancelStatus");
+        if (result.getInteger("code") != 200) {
+            throw new YyghException(result.getString("message"), ResultCodeEnum.FAIL.getCode());
+        } else {
+            if (orderInfo.getOrderStatus().intValue() == OrderStatusEnum.PAID.getStatus()) {    //已支付取消预约
+                //退款
+                Boolean refund = weixinService.refund(orderInfo.getId());
+                if (!refund) {
+                    throw new YyghException(ResultCodeEnum.CANCEL_ORDER_FAIL);
+                }
+            }
+            //1,2种情况都需更改订单状态,且告知医院更新可预约数量
+            orderInfo.setOrderStatus(OrderStatusEnum.CANCLE.getStatus());
+            baseMapper.updateById(orderInfo);
+            //发送mq信息更新预约数 我们与下单成功更新预约数使用相同的mq信息，不设置可预约数与剩余预约数，接收端可预约数+1即可
+            OrderMqVo orderMqVo = new OrderMqVo();
+            orderMqVo.setScheduleId(orderInfo.getScheduleId());
+            //短信提示
+            MsmVo msmVo = new MsmVo();
+            msmVo.setPhone(orderInfo.getPatientPhone());
+//            String reserveDate =
+//                    new DateTime(orderInfo.getReserveDate()).toString("yyyy-MM-dd")
+//                            + (orderInfo.getReserveTime() == 0 ? "上午" : "下午");
+            Map<String, Object> param = new HashMap<String, Object>() {{
+//                put("title", orderInfo.getHosname() + "|" + orderInfo.getDepname() + "|" + orderInfo.getTitle());
+//                put("amount", orderInfo.getAmount());
+//                put("reserveDate", reserveDate);
+//                put("name", orderInfo.getPatientName());
+//                put("quitTime", new DateTime(orderInfo.getQuitTime()).toString("yyyy-MM-dd HH:mm"));
+                put("code", "cancel successful");
+            }};
+            msmVo.setParam(param);
+            orderMqVo.setMsmVo(msmVo);
+            rabbitService.sendMessage(MqConst.EXCHANGE_DIRECT_ORDER, MqConst.ROUTING_ORDER, orderMqVo);
+        }
+        return true;
+    }
+
+    //就医提醒
+    @Override
+    public void patientTips() {
+        QueryWrapper<OrderInfo> wrapper = new QueryWrapper<>();
+        wrapper.eq("reserve_date",new DateTime().toString("yyyy-MM-dd"));
+        List<OrderInfo> orderInfos = baseMapper.selectList(wrapper);
+        for (OrderInfo orderInfo : orderInfos) {
+            //短信提示
+            MsmVo msmVo = new MsmVo();
+            msmVo.setPhone(orderInfo.getPatientPhone());
+//            String reserveDate =
+//                    new DateTime(orderInfo.getReserveDate()).toString("yyyy-MM-dd")
+//                            + (orderInfo.getReserveTime() == 0 ? "上午" : "下午");
+            Map<String, Object> param = new HashMap<String, Object>() {{
+//                put("title", orderInfo.getHosname() + "|" + orderInfo.getDepname() + "|" + orderInfo.getTitle());
+//                put("amount", orderInfo.getAmount());
+//                put("reserveDate", reserveDate);
+//                put("name", orderInfo.getPatientName());
+//                put("quitTime", new DateTime(orderInfo.getQuitTime()).toString("yyyy-MM-dd HH:mm"));
+                put("code", "please seek medical treatment");
+            }};
+            msmVo.setParam(param);
+            rabbitService.sendMessage(MqConst.EXCHANGE_DIRECT_MSM, MqConst.ROUTING_MSM_ITEM, msmVo);
+        }
     }
 
     private OrderInfo packageOrderInfo(OrderInfo orderInfo) {

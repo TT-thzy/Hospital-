@@ -143,6 +143,11 @@ public class HospitalServiceImpl implements HospitalService {
         orderInfoMapper.updateById(orderInfo);
     }
 
+    @Override
+    public void updateCancelNum(Map<String, Object> paramMap) {
+
+    }
+
     private Schedule getSchedule(String frontSchId) {
         return hospitalMapper.selectById(frontSchId);
     }

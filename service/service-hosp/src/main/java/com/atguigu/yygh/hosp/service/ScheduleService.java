@@ -33,4 +33,5 @@ public interface ScheduleService {
 
     void update(Schedule schedule);
 
+    Schedule getScheduleByHosScheduleId(String scheduleId);
 }

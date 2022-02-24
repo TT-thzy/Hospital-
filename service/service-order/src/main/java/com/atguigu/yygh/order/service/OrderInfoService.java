@@ -22,4 +22,8 @@ public interface OrderInfoService extends IService<OrderInfo> {
     OrderInfo getOrderDetail(String orderId);
 
     Map<String,Object> show(String id);
+
+    Boolean cancelOrder(Long orderId);
+    //就医提醒
+    void patientTips();
 }
